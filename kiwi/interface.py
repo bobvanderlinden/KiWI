@@ -1,5 +1,3 @@
-from .install import FailedInstallStep
-
 separator_tag = '*'
 
 class MenuItem(object):
