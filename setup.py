@@ -9,6 +9,7 @@ setup(
     author_email = 'joseph.kogut@gmail.com',
     url = 'http://github.com/jakogut/kiwi.git',
     packages = ['kiwi'],
+    scripts=['scripts/kiwi-install'],
     install_requires = [
         'pythondialog >= 3.3.0'
     ]

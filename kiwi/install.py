@@ -24,9 +24,6 @@ import urllib.request
 from urllib.error import HTTPError, URLError
 import socket
 
-config_url = 'http://10.10.200.1/linux/kiwi/kiwi.conf'
-config_timeout=0.1
-
 class FailedInstallStep(Exception): pass
 
 class WindowsInstallApp(object):
@@ -444,34 +441,3 @@ class WindowsInstallApp(object):
 
     def exit(self):
         self.running = False
-
-def handle_exception(exc_type, exc_value, exc_traceback):
-    if issubclass(exc_type, KeyboardInterrupt):
-        sys.__excepthook__(exc_type, exc_value, exc_traceback)
-        return
-
-    logger.critical('Unhandled exception', exc_info=(exc_type, exc_value, exc_traceback))
-
-import sys
-sys.excepthook = handle_exception
-
-if __name__ == '__main__':
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-
-    fh = logging.FileHandler('/tmp/kiwi-install.log')
-    logger.addHandler(fh)
-
-    configdata = None
-
-    try:
-        configdata = urllib.request.urlopen(config_url, timeout=config_timeout).read().decode('UTF-8')
-    except (HTTPError, URLError):
-        logger.warning('Unable to fetch config file from URL {}'.format(config_url))
-    except socket.timeout:
-        logger.warning('Socket timed out while trying to fetch config')
-
-    config = configparser.ConfigParser()
-    config.read_string(configdata)
-
-    app = WindowsInstallApp(config)
