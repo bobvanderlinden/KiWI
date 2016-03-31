@@ -251,6 +251,7 @@ class WindowsInstallApp(object):
             self.configure_network()
 
         source_items = [
+            ('Online', MenuItem(self.prepare_online_source)),
             ('Network Filesystem (NFS)', MenuItem(self.prepare_nfs_source)),
             ('Windows Share (SMB/CIFS)', MenuItem(self.prepare_smb_source)),
             #('Network Block Device (NBD)', MenuItem()),
@@ -266,6 +267,18 @@ class WindowsInstallApp(object):
         except FailedInstallStep: raise
         except subprocess.CalledProcessError:
             self.d.msgbox('Mount Failed. Please retry the installation source selection step')
+
+    def prepare_online_source(self):
+        self.logger.info('Retrieving ISO download url from Microsoft...')
+        output = subprocess.check_output(['phantomjs', '/etc/getdownloadurl.js'])
+        isoUrl = output.split('\n')[-1]
+        self.logger.info('ISO url: {0}'.format(isoUrl))
+        subprocess.check_call(['mkdir', '-p', '/mnt/http'])
+        subprocess.check_call(['httpfs2', isoUrl, '/mnt/http'])
+        isoPath = glob.glob('/mnt/http/*')[0]
+        self.logger.info('ISO path: {0}'.format(isoPath))
+        mount(isoPath, self.source_dir, force=True, mkdir=True)
+        self.logger.info('ISO mounted at: {0}'.format(self.source_dir))
 
     def prepare_nfs_source(self):
         code, path = self.d.inputbox('Enter an NFS server or share',
